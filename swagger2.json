@@ -1,0 +1,266 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Arenadata Catalog Apis",
+    "description" : "---\ntitle: APIs\nslug: /main-concepts/metadata-standard/apis\n---\n\n# APIs\n\nOpenMetadata supports REST APIs for getting data and in and out of the metadata service. APIs are built using general\nbest practices of REST API design. We take a schema-first approach by defining Types and Entities in JSON Schema. We\nimplement APIs based on these schemas.\n\n## Overview\n\n### URI\n\nFollowing REST API conventions are followed for Resource URIs:\n- Operations for an entity are available through the Resource URI as a collection `.../api/<version>/entities`. \n- Plural of the entity name is used as the collection name - example `.../api/v1/users`.\n- Trailing forward slash is not used in the endpoint URI. Example use `.../api/v1/databases` instead of `.../api/v1/databases/`.\n- Resource URI for an entity instance by the entity id is `.../api/v1/entities/{id}`. \n- Resource URI for an entity instance by name is `.../api/v1/entities/name/{name}`.\n\n### Resource Representation\n\n- The REST API calls return a response with JSON `Content-Type` and `Content-Length` that includes the length of the response.\n- All responses include the Resource ID field even though the id was provided in the request to simplify the consumption \n  of the response at the client.\n- Entity names and field names use `camelCase` per Javascript naming convention.\n- All resources include an attribute `href` with Resource URI. All relationship fields of an entity will also \n  include `href` links to the related resource for easy access.\n- Unknown fields sent by the client in API requests are not ignored to ensure the data sent by the client is not dropped \n  at the server without the user being aware of it.\n\n## API Organization\n\nYou can find the swagger documentation [here](/swagger.html). In a nutshell:\n\n**Data Asset APIs** - support operations related to data asset entities.\n- `.../api/v1/databases`\n- `...api/v1/tables`\n- `.../api/v1/metrics`\n- `.../api/v1/dashboards`\n- `.../api/v1/reports`\n- `.../api/v1/pipelines`\n- `.../api/v1/topics`\n\n**Service APIs** - support operations related to services from which metadata is collected:\n- `.../api/v1/services` is the collection of all service resources.\n- `.../api/v1/services/databaseService` - APIs related to database services. This includes Transactional databases - MySQL, Postgres, MSSQL, Oracle, and Data Warehouses - Apache Hive BigQuery, Redshift, and Snowflake.\n- `.../api/v1/services/dashboardService` - APIs related to Dashboard Services. This includes Looker, Superset, and Tableau.\n- `.../api/v1/services/messagingService` - APIs related to Messaging Services. This includes Apache Kafka, Redpanda, - Kinesis, and others.\n\n**Teams & Users APIs**\n- `.../api/v1/teams` - APIs related to team entities\n- `.../api/v1/users` - APIs related to user entities\n\n**Search & Suggest APIs** - support search and suggest APIs:\n- `.../api/v1/search` - collection for search and suggest APIs\n- `.../api/v1/search/query` - search entities using query text\n- `.../api/v1/search/suggest` - get suggested entities used for auto-completion\n\n**Other APIs**\n- `.../api/v1/tags` for APIs related to Classification and Tag entities\n- `../api/v1/feeds` for APIs related to Threads and Posts entities\n- `.../api/v1/usage` for reporting usage information of entities",
+    "contact" : {
+      "name" : "Arenadata Catalog",
+      "url" : "https://arenadc.io"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "version" : "0.8.1.2"
+  },
+  "servers" : [ {
+    "url" : "/api",
+    "description" : "Current Host"
+  }, {
+    "url" : "http://localhost:8585/api",
+    "description" : "Endpoint URL"
+  } ],
+  "tags" : [ {
+    "name" : "Bots",
+    "description" : "A `Bot` automates tasks, such as ingesting metadata, and running data quality It performs this task as a special user in the system."
+  }, {
+    "name" : "Charts",
+    "description" : "A `Chart` are computed from data presents data visually and can be part of `Dashboards`."
+  }, {
+    "name" : "Diff",
+    "description" : "Различия в двух версиях объекта."
+  }, {
+    "name" : "recordCounters",
+    "description" : "computing count of records"
+  }, {
+    "name" : "Dashboards",
+    "description" : "Dashboards are computed from data and visually present data, metrics, and KPIs. They are typically updated in real-time and allow interactive data exploration."
+  }, {
+    "name" : "Databases",
+    "description" : "A `Database` also referred to as `Database Catalog` is a collection of schemas."
+  } ],
+  "paths" : {
+    "/v1/adc-workflow/entity-task/{id}" : {
+      "get" : {
+        "tags" : [ "workflow" ],
+        "summary" : "get task by ID",
+        "operationId" : "getTask",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "User Task id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityUserTaskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/adc-workflow/glossaryTerm/configurations" : {
+      "get" : {
+        "tags" : [ "glossaryTermWorkflowConfigs" ],
+        "summary" : "List GlossaryTermWorkflowConfigs",
+        "description" : "Get a list of glossaryTermWorkflowConfigs. Use `fields` parameter to get only necessary fields.  Use cursor-based pagination to limit the number entries in the list using `limit` and `before` or `after` query params.",
+        "operationId" : "listGlossaryTermWorkflowConfigs",
+        "parameters" : [ {
+          "name" : "fields",
+          "in" : "query",
+          "description" : "Fields requested in the returned resource",
+          "schema" : {
+            "type" : "string",
+            "example" : "id,name,workflowScenario,triggers,taskConfigs,enabled"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Limit the number glossaryTermWorkflowConfigs returned. (1 to 1000000, default = 10)",
+          "schema" : {
+            "maximum" : 1000000,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "description" : "Returns list of glossaryTermWorkflowConfigs before this cursor",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "after",
+          "in" : "query",
+          "description" : "Returns list of glossaryTermWorkflowConfigs after this cursor",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "include",
+          "in" : "query",
+          "description" : "Include all, deleted, or non-deleted entities.",
+          "schema" : {
+            "type" : "string",
+            "default" : "non-deleted",
+            "enum" : [ "all", "deleted", "non-deleted" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "List of glossaryTermWorkflowConfigs",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GlossaryTermWorkflowConfigList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "summary" : "Create configuration for glossary term workflow",
+        "description" : "Create configuration for glossary term workflow",
+        "operationId" : "createConfiguration",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateGlossaryTermWorkflowConfig"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The configuration",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GlossaryTermWorkflowConfig"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad request"
+          }
+        }
+      }
+    },
+    "/v1/adc-workflow/glossaryTerm/configurations/mapped" : {
+      "get" : {
+        "tags" : [ "glossaryTermWorkflowConfigs" ],
+        "summary" : "List GlossaryTermWorkflowConfigs",
+        "description" : "Get a list of glossaryTermWorkflowConfigs. Use `fields` parameter to get only necessary fields.  Use cursor-based pagination to limit the number entries in the list using `limit` and `before` or `after` query params.",
+        "operationId" : "listGlossaryTermWorkflowConfigs_1",
+        "parameters" : [ {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Limit the number glossaryTermWorkflowConfigs returned. (1 to 1000000, default = 10)",
+          "schema" : {
+            "maximum" : 1000000,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "before",
+          "in" : "query",
+          "description" : "Returns list of glossaryTermWorkflowConfigs before this cursor",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "after",
+          "in" : "query",
+          "description" : "Returns list of glossaryTermWorkflowConfigs after this cursor",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "include",
+          "in" : "query",
+          "description" : "Include all, deleted, or non-deleted entities.",
+          "schema" : {
+            "type" : "string",
+            "default" : "non-deleted",
+            "enum" : [ "all", "deleted", "non-deleted" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "List of glossaryTermWorkflowConfigs",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GlossaryTermWorkflowConfigList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/adc-workflow/glossaryTerm/configurations/name/{name}" : {
+      "get" : {
+        "summary" : "Get a by name",
+        "description" : "Get by `name`.",
+        "operationId" : "getGlossaryTermWorkflowConfigByName",
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "fields",
+          "in" : "query",
+          "description" : "Fields requested in the returned resource",
+          "schema" : {
+            "type" : "string",
+            "example" : "id,name,workflowScenario,triggers,taskConfigs,enabled"
+          }
+        }, {
+          "name" : "include",
+          "in" : "query",
+          "description" : "Include all, deleted, or non-deleted entities.",
+          "schema" : {
+            "type" : "string",
+            "default" : "non-deleted",
+            "enum" : [ "all", "deleted", "non-deleted" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The user",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GlossaryTermWorkflowConfig"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "GlossaryTermWorkflowConfig for instance {id} is not found"
+          }
+        }
+      }
+    }
+  }
+}
